@@ -26,5 +26,7 @@
     <extension name='merchandisefulfilmentprocess'/>
     <extension name='merchandiseinitialdata'/>
     <extension name='merchandisecockpits'/>
+    <extension name="merchandisecommerceservices"/>
+    <extension name="randomimageaddon"/>
   </extensions>
 </hybrisconfig>
