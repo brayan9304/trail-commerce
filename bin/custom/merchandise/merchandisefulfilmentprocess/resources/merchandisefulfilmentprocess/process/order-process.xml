@@ -97,6 +97,11 @@
 		<transition name="OK" to="success"/>
 	</action>
 
+	<action id="waitForImmediateCancel" bean="waitForImmediateCancel">
+		<transition name="OK" to="checkOrder"/>
+		<transition name="NOK" to="waitForImmediateCancel"/>
+		<transition name="CANCELLED" to="failed"/>
+	</action>
 	<end id="error" state="ERROR">All went wrong.</end>
 	<end id="failed" state="FAILED">Order not placed.</end>
 	<end id="success" state="SUCCEEDED">Order placed.</end>
