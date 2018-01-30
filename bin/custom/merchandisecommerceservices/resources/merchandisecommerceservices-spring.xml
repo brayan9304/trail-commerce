@@ -31,4 +31,6 @@
 		<property name="typeCode" value="Customer"/>
 	</bean>
 
+	<alias name="merchandiseOrderCancelStateMappingStrategy" alias="defaultOrderCancelStateMappingStrategy"/>
+	<bean id="merchandiseOrderCancelStateMappingStrategy" class="de.hybris.merchandise.ordercancel.impl.MerchandiseOrderCancelStateMappingStrategy" scope="prototype"/>
 </beans>

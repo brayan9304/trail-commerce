@@ -78,7 +78,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-
+import de.hybris.merchandise.facades.order.OrderCancelFacade;
+import de.hybris.merchandise.facades.order.data.OrderCancelResultData;
 /**
  * Controller for home page
  */
@@ -118,6 +119,9 @@ public class AccountPageController extends AbstractSearchPageController
 
 	private static final Logger LOG = Logger.getLogger(AccountPageController.class);
 
+	private static final String REDIRECT_TO_ORDERS = REDIRECT_PREFIX + "/my-account/orders";
+
+
 	@Resource(name = "orderFacade")
 	private OrderFacade orderFacade;
 
@@ -153,6 +157,9 @@ public class AccountPageController extends AbstractSearchPageController
 
 	@Resource(name = "addressVerificationResultHandler")
 	private AddressVerificationResultHandler addressVerificationResultHandler;
+
+	@Resource(name = "orderCancelFacade")
+	private OrderCancelFacade orderCancelFacade;
 
 	protected PasswordValidator getPasswordValidator()
 	{
@@ -271,19 +278,18 @@ public class AccountPageController extends AbstractSearchPageController
 	@RequestMapping(value = "/orders", method = RequestMethod.GET)
 	@RequireHardLogIn
 	public String orders(@RequestParam(value = "page", defaultValue = "0") final int page,
-			@RequestParam(value = "show", defaultValue = "Page") final ShowMode showMode,
-			@RequestParam(value = "sort", required = false) final String sortCode, final Model model)
+						 @RequestParam(value = "show", defaultValue = "Page") final ShowMode showMode,
+						 @RequestParam(value = "sort", required = false) final String sortCode, final Model model)
 			throws CMSItemNotFoundException
 	{
 		// Handle paged search results
 		final PageableData pageableData = createPageableData(page, 5, sortCode, showMode);
 		final SearchPageData<OrderHistoryData> searchPageData = orderFacade.getPagedOrderHistoryForStatuses(pageableData);
 		populateModel(model, searchPageData, showMode);
-
 		storeCmsPageInModel(model, getContentPageForLabelOrId(ORDER_HISTORY_CMS_PAGE));
 		setUpMetaDataForContentPage(model, getContentPageForLabelOrId(ORDER_HISTORY_CMS_PAGE));
 		model.addAttribute("breadcrumbs", accountBreadcrumbBuilder.getBreadcrumbs("text.account.orderHistory"));
-		model.addAttribute(ThirdPartyConstants.SeoRobots.META_ROBOTS, ThirdPartyConstants.SeoRobots.NOINDEX_NOFOLLOW);
+		model.addAttribute("metaRobots", "noindex,nofollow");
 		return getViewForPage(model);
 	}
 
@@ -948,5 +954,15 @@ public class AccountPageController extends AbstractSearchPageController
 		GlobalMessages.addFlashMessage(redirectAttributes, GlobalMessages.CONF_MESSAGES_HOLDER,
 				"text.account.profile.paymentCart.removed");
 		return REDIRECT_TO_PAYMENT_INFO_PAGE;
+	}
+
+	@RequestMapping(value = "/order/cancel/{orderCode}", method = RequestMethod.POST)
+	public String orderCancel(@PathVariable("orderCode") final String orderCode, final RedirectAttributes redirectAttributes)
+			throws CMSItemNotFoundException
+	{
+		final OrderData orderDetails = orderFacade.getOrderDetailsForCode(orderCode);
+		final OrderCancelResultData cancelResult = orderCancelFacade.cancelOrder(orderDetails);
+		redirectAttributes.addFlashAttribute("orderCancelResult", cancelResult);
+		return REDIRECT_TO_ORDERS;
 	}
 }
